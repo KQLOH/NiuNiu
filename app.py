@@ -1,65 +1,64 @@
 import streamlit as st
 from itertools import combinations
 
-# 页面配置（手机更适合 wide）
+# 页面设置
 st.set_page_config(page_title="牛牛计算器 Pro", layout="wide")
 
-# ===============================
-# ✅ 手机完美适配 CSS
-# ===============================
+# ==========================
+# 🎯 真正 4x4 Grid 布局 CSS
+# ==========================
 st.markdown("""
 <style>
 
-/* 页面整体缩小 padding */
+/* 页面整体缩小 */
 .block-container {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-    padding-top: 15px !important;
-}
-
-/* 每一列等比例缩放 */
-[data-testid="column"] {
-    flex: 1 1 0% !important;
-    min-width: 0px !important;
-    padding: 3px !important;
-}
-
-/* 按钮样式 */
-.stButton > button {
-    width: 100% !important;
-    height: 58px !important;
-    font-size: 18px !important;
-    font-weight: bold !important;
-    border-radius: 14px !important;
-}
-
-/* 手机优化 */
-@media (max-width: 480px) {
-    .stButton > button {
-        height: 50px !important;
-        font-size: 16px !important;
-    }
+    padding: 10px !important;
 }
 
 /* 显示屏 */
 .display-screen {
-    box-sizing: border-box !important;
-    width: 100% !important;
+    box-sizing: border-box;
+    width: 100%;
     background-color: #1c1c1e;
-    color: #ffffff;
-    padding: 14px;
-    border-radius: 18px;
+    color: white;
+    padding: 12px;
+    border-radius: 15px;
     text-align: right;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
     border: 1px solid #3a3a3c;
+}
+
+/* 4x4 Grid 容器 */
+.keyboard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+/* 按钮 */
+.keyboard button {
+    width: 100%;
+    height: 55px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 14px;
+    border: none;
+}
+
+/* 手机优化 */
+@media (max-width: 480px) {
+    .keyboard button {
+        height: 48px;
+        font-size: 16px;
+    }
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ===============================
-# ✅ 核心算法
-# ===============================
+# ==========================
+# 🧠 算法
+# ==========================
 def get_val(c):
     if c in ['J', 'Q', 'K', '10']:
         return 10
@@ -71,7 +70,7 @@ def solve(cards):
     cards = tuple(c.upper() for c in cards)
     hands = {cards}
 
-    # 3和6互换规则
+    # 3 和 6 互换
     for i, c in enumerate(cards):
         tmp = set()
         for h in hands:
@@ -108,69 +107,72 @@ def solve(cards):
 
     return best
 
-# ===============================
-# ✅ 状态管理
-# ===============================
-if 'cards' not in st.session_state:
+# ==========================
+# 状态
+# ==========================
+if "cards" not in st.session_state:
     st.session_state.cards = []
 
-# ===============================
-# ✅ UI
-# ===============================
+# ==========================
+# UI
+# ==========================
 st.title("🃏 牛牛计算器")
 
-display_str = " ".join(st.session_state.cards) if st.session_state.cards else "READY"
+display = " ".join(st.session_state.cards) if st.session_state.cards else "READY"
 
-st.markdown(f'''
+st.markdown(f"""
 <div class="display-screen">
-    <div style="font-size: 12px; color: #8e8e93;">已选 {len(st.session_state.cards)} / 5</div>
-    <div style="font-size: 32px; font-weight: bold; color: #007aff;">
-        {display_str}
+    <div style="font-size:12px;color:#8e8e93;">
+        已选 {len(st.session_state.cards)} / 5
+    </div>
+    <div style="font-size:30px;font-weight:bold;color:#007aff;">
+        {display}
     </div>
 </div>
-''', unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# ===============================
-# ✅ 键盘布局（4x4）
-# ===============================
+# ==========================
+# 🎯 4x4 键盘
+# ==========================
 keys = [
-    ['A', '2', '3', '4'],
-    ['5', '6', '7', '8'],
-    ['9', '10', 'J', 'Q'],
-    ['K', 'RE', 'AC', '']
+    'A','2','3','4',
+    '5','6','7','8',
+    '9','10','J','Q',
+    'K','RE','AC',''
 ]
 
-for row in keys:
-    cols = st.columns(4)
-    for i, key in enumerate(row):
+st.markdown('<div class="keyboard">', unsafe_allow_html=True)
 
-        if key == 'AC':
-            if cols[i].button("AC", type="primary", use_container_width=True):
-                st.session_state.cards = []
+for key in keys:
+    if key == "":
+        st.markdown("<div></div>", unsafe_allow_html=True)
+    elif key == "AC":
+        if st.button("AC"):
+            st.session_state.cards = []
+            st.rerun()
+    elif key == "RE":
+        if st.button("RE"):
+            if st.session_state.cards:
+                st.session_state.cards.pop()
+                st.rerun()
+    else:
+        if st.button(key):
+            if len(st.session_state.cards) < 5:
+                st.session_state.cards.append(key)
                 st.rerun()
 
-        elif key == 'RE':
-            if cols[i].button("RE", use_container_width=True):
-                if st.session_state.cards:
-                    st.session_state.cards.pop()
-                    st.rerun()
-
-        elif key != '':
-            if cols[i].button(key, use_container_width=True):
-                if len(st.session_state.cards) < 5:
-                    st.session_state.cards.append(key)
-                    st.rerun()
+st.markdown("</div>", unsafe_allow_html=True)
 
 st.divider()
 
-# ===============================
-# ✅ 自动计算结果
-# ===============================
+# ==========================
+# 自动结果
+# ==========================
 if len(st.session_state.cards) == 5:
     res = solve(st.session_state.cards)
 
     if res["score"] != -1:
         st.success(f"### {res['type']}")
-        st.info(f"摆法：底[{' '.join(res['base'])}]  分[{' '.join(res['sub'])}]")
+        st.info(f"摆法：底[{' '.join(res['base'])}] 分[{' '.join(res['sub'])}]")
     else:
         st.error("### 结果：没牛")
