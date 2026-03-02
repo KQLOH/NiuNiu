@@ -1,21 +1,40 @@
 import streamlit as st
 from itertools import combinations
 
-# 页面设置
 st.set_page_config(page_title="牛牛计算器 Pro", layout="wide")
 
-# ==========================
-# 🎯 真正 4x4 Grid 布局 CSS
-# ==========================
+# =========================
+# 手机优化 CSS
+# =========================
 st.markdown("""
 <style>
 
-/* 页面整体缩小 */
+/* 页面边距缩小 */
 .block-container {
     padding: 10px !important;
 }
 
-/* 显示屏 */
+/* 强制一行4列，不换行 */
+div[data-testid="stHorizontalBlock"] {
+    flex-wrap: nowrap !important;
+}
+
+/* 每列平均分 */
+[data-testid="column"] {
+    flex: 1 1 0% !important;
+    min-width: 0px !important;
+    padding: 3px !important;
+}
+
+/* 按钮样式 */
+.stButton > button {
+    width: 100% !important;
+    height: 50px !important;
+    font-size: 16px !important;
+    font-weight: bold;
+    border-radius: 12px !important;
+}
+
 .display-screen {
     box-sizing: border-box;
     width: 100%;
@@ -28,37 +47,12 @@ st.markdown("""
     border: 1px solid #3a3a3c;
 }
 
-/* 4x4 Grid 容器 */
-.keyboard {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-}
-
-/* 按钮 */
-.keyboard button {
-    width: 100%;
-    height: 55px;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 14px;
-    border: none;
-}
-
-/* 手机优化 */
-@media (max-width: 480px) {
-    .keyboard button {
-        height: 48px;
-        font-size: 16px;
-    }
-}
-
 </style>
 """, unsafe_allow_html=True)
 
-# ==========================
-# 🧠 算法
-# ==========================
+# =========================
+# 算法
+# =========================
 def get_val(c):
     if c in ['J', 'Q', 'K', '10']:
         return 10
@@ -70,7 +64,6 @@ def solve(cards):
     cards = tuple(c.upper() for c in cards)
     hands = {cards}
 
-    # 3 和 6 互换
     for i, c in enumerate(cards):
         tmp = set()
         for h in hands:
@@ -107,15 +100,15 @@ def solve(cards):
 
     return best
 
-# ==========================
+# =========================
 # 状态
-# ==========================
+# =========================
 if "cards" not in st.session_state:
     st.session_state.cards = []
 
-# ==========================
+# =========================
 # UI
-# ==========================
+# =========================
 st.title("🃏 牛牛计算器")
 
 display = " ".join(st.session_state.cards) if st.session_state.cards else "READY"
@@ -125,49 +118,51 @@ st.markdown(f"""
     <div style="font-size:12px;color:#8e8e93;">
         已选 {len(st.session_state.cards)} / 5
     </div>
-    <div style="font-size:30px;font-weight:bold;color:#007aff;">
+    <div style="font-size:28px;font-weight:bold;color:#007aff;">
         {display}
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ==========================
-# 🎯 4x4 键盘
-# ==========================
+# =========================
+# 真正固定 4x4
+# =========================
 keys = [
-    'A','2','3','4',
-    '5','6','7','8',
-    '9','10','J','Q',
-    'K','RE','AC',''
+    ['A','2','3','4'],
+    ['5','6','7','8'],
+    ['9','10','J','Q'],
+    ['K','RE','AC','']
 ]
 
-st.markdown('<div class="keyboard">', unsafe_allow_html=True)
+for row in keys:
+    cols = st.columns(4)
+    for i, key in enumerate(row):
 
-for key in keys:
-    if key == "":
-        st.markdown("<div></div>", unsafe_allow_html=True)
-    elif key == "AC":
-        if st.button("AC"):
-            st.session_state.cards = []
-            st.rerun()
-    elif key == "RE":
-        if st.button("RE"):
-            if st.session_state.cards:
-                st.session_state.cards.pop()
-                st.rerun()
-    else:
-        if st.button(key):
-            if len(st.session_state.cards) < 5:
-                st.session_state.cards.append(key)
+        if key == "":
+            cols[i].empty()
+
+        elif key == "AC":
+            if cols[i].button("AC"):
+                st.session_state.cards = []
                 st.rerun()
 
-st.markdown("</div>", unsafe_allow_html=True)
+        elif key == "RE":
+            if cols[i].button("RE"):
+                if st.session_state.cards:
+                    st.session_state.cards.pop()
+                    st.rerun()
+
+        else:
+            if cols[i].button(key):
+                if len(st.session_state.cards) < 5:
+                    st.session_state.cards.append(key)
+                    st.rerun()
 
 st.divider()
 
-# ==========================
-# 自动结果
-# ==========================
+# =========================
+# 自动计算
+# =========================
 if len(st.session_state.cards) == 5:
     res = solve(st.session_state.cards)
 
