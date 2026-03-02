@@ -9,42 +9,48 @@ st.set_page_config(page_title="牛牛计算器 Pro", layout="wide")
 st.markdown("""
 <style>
 
-/* 页面边距缩小 */
+/* 页面去掉左右边距 */
 .block-container {
-    padding: 10px !important;
+    padding: 0rem 0.5rem !important;
 }
 
-/* 强制一行4列，不换行 */
+/* 行不要换行 */
 div[data-testid="stHorizontalBlock"] {
     flex-wrap: nowrap !important;
+    gap: 0px !important;
 }
 
-/* 每列平均分 */
+/* 列完全无间距 */
 [data-testid="column"] {
-    flex: 1 1 0% !important;
-    min-width: 0px !important;
-    padding: 3px !important;
+    padding: 0px !important;
 }
 
-/* 按钮样式 */
+/* 按钮去掉所有 margin */
+.stButton {
+    margin: 0px !important;
+}
+
 .stButton > button {
     width: 100% !important;
-    height: 50px !important;
-    font-size: 16px !important;
+    height: 60px !important;
+    margin: 0px !important;
+    padding: 0px !important;
+    border-radius: 0px !important;
+    font-size: 18px !important;
     font-weight: bold;
-    border-radius: 12px !important;
 }
 
+/* 显示屏 */
 .display-screen {
     box-sizing: border-box;
     width: 100%;
     background-color: #1c1c1e;
     color: white;
     padding: 12px;
-    border-radius: 15px;
+    border-radius: 0px;
     text-align: right;
-    margin-bottom: 15px;
-    border: 1px solid #3a3a3c;
+    margin-bottom: 8px;
+    border: none;
 }
 
 </style>
