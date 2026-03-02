@@ -6,12 +6,7 @@ st.set_page_config(page_title="牛牛计算器 Pro", layout="centered")
 
 # --- 核心 CSS：强制移动端不换行 + 完美上下对齐 ---
 st.markdown("""
-    <style>
-    /* 强制所有按键行不换行，保持 4 列并排 */
-    div[data-testid="stHorizontalBlock"] {
-        flex-wrap: nowrap !important;
-    }
-    
+    <style>    
     [data-testid="column"] {
         flex: 1 1 0% !important;
         min-width: 0px !important;
