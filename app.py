@@ -1,43 +1,30 @@
 import streamlit as st
 from itertools import combinations
 
+# =========================
 # 页面基础配置
-st.set_page_config(page_title="牛牛计算器 Pro", layout="centered")
+# =========================
+st.set_page_config(page_title="牛牛计算器", layout="centered")
 
-# --- 核心 CSS：强制移动端不换行 + 完美上下对齐 ---
+# 只保留最基础的按键加高 CSS，方便手指点击 (User Friendly)
 st.markdown("""
-    <style>    
-    [data-testid="column"] {
-        flex: 1 1 0% !important;
-        min-width: 0px !important;
-    }
-    
-    /* 按钮样式优化：必须是 100%，让它撑满所属的列，从而跟显示屏齐平 */
+    <style>
     .stButton > button {
-        width: 100% !important; 
         height: 60px !important;
-        padding: 0px !important;
         font-size: 20px !important;
         font-weight: bold !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
     }
-
-    /* 显示屏样式：增加宽度和盒子模型限制，完美对齐下方按钮边缘 */
-    .display-screen {
-        box-sizing: border-box !important;
-        width: 100% !important;
-        background-color: #1c1c1e;
-        color: #ffffff;
-        padding: 15px;
-        border-radius: 12px;
-        text-align: right;
-        margin-bottom: 15px;
-        border: 1px solid #3a3a3c;
+    /* 让结果提示框更大更醒目 */
+    .stAlert {
+        font-size: 18px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 核心算法逻辑 ---
+# =========================
+# 核心算法逻辑
+# =========================
 def get_val(c):
     if c in ['J', 'Q', 'K', '10']: return 10
     if c == 'A': return 1
@@ -69,55 +56,75 @@ def solve(cards):
                             "score": cur_v, "base": base, "sub": sub}
     return best
 
-# --- 状态管理 ---
+# =========================
+# 状态管理
+# =========================
 if 'cards' not in st.session_state:
     st.session_state.cards = []
 
-# --- UI 界面 ---
-st.title("🃏 牛牛计算器")
+# =========================
+# UI 界面 - User Friendly 版
+# =========================
+st.title("🃏 牛牛智能计算器")
+st.caption("支持 3/6 互变与宝宝对子规则")
 
-# 显示屏
-display_str = " ".join(st.session_state.cards) if st.session_state.cards else "READY"
-st.markdown(f'''
-    <div class="display-screen">
-        <div style="font-size: 12px; color: #8e8e93;">已选 {len(st.session_state.cards)} / 5</div>
-        <div style="font-size: 32px; font-weight: bold; color: #007aff;">{display_str}</div>
-    </div>
-''', unsafe_allow_html=True)
+# 1. 顶部状态与显示屏 (使用原生组件，干净清爽)
+st.markdown(f"**已选牌数： {len(st.session_state.cards)} / 5**")
 
-# 键盘矩阵：完美的 4x4 布局
-keys = [
-    ['A', '2', '3', '4'],
-    ['5', '6', '7', '8'],
-    ['9', '10', 'J', 'Q'],
-    ['K', 'RE', 'AC', '']  
-]
+# 用一个好看的代码块来展示当前手牌
+display_str = "  ".join(st.session_state.cards) if st.session_state.cards else "请在下方点击选牌..."
+st.info(f"### {display_str}")
 
-for row in keys:
-    cols = st.columns(4) # 每一行严格 4 列
-    for i, key in enumerate(row):
-        if key == 'AC':
-            if cols[i].button("AC (清空)", type="primary", use_container_width=True):
-                st.session_state.cards = []
-                st.rerun()
-        elif key == 'RE':
-            if cols[i].button("RE (退格)", use_container_width=True):
-                if st.session_state.cards:
-                    st.session_state.cards.pop()
-                    st.rerun()
-        elif key != '':
-            if cols[i].button(key, use_container_width=True):
-                if len(st.session_state.cards) < 5:
-                    st.session_state.cards.append(key)
-                    st.rerun()
+# 2. 独立的操作区 (防误触)
+col_del, col_clear = st.columns(2)
+with col_del:
+    if st.button("🔙 退格", use_container_width=True):
+        if st.session_state.cards:
+            st.session_state.cards.pop()
+            st.rerun()
+with col_clear:
+    if st.button("🗑️ 清空重选", type="primary", use_container_width=True):
+        st.session_state.cards = []
+        st.rerun()
 
 st.divider()
 
-# 自动结果
+# 3. 选牌区 (自然排版)
+keys = [
+    ['A', '2', '3', '4'],
+    ['5', '6', '7', '8'],
+    ['9', '10', 'J', 'Q']
+]
+
+for row in keys:
+    cols = st.columns(4)
+    for i, key in enumerate(row):
+        if cols[i].button(key, use_container_width=True):
+            if len(st.session_state.cards) < 5:
+                st.session_state.cards.append(key)
+                st.rerun()
+
+# K 单独放中间，或者按常规对齐
+cols_last = st.columns(4)
+if cols_last[0].button("K", use_container_width=True):
+    if len(st.session_state.cards) < 5:
+        st.session_state.cards.append("K")
+        st.rerun()
+
+st.divider()
+
+# =========================
+# 结果展示区
+# =========================
 if len(st.session_state.cards) == 5:
     res = solve(st.session_state.cards)
     if res["score"] != -1:
-        st.success(f"### {res['type']}")
-        st.info(f"摆法：底[{' '.join(res['base'])}] 分[{' '.join(res['sub'])}]")
+        st.success(f"## 🎉 结果：{res['type']}")
+        
+        # 用两列清晰展示底牌和分牌
+        res_col1, res_col2 = st.columns(2)
+        res_col1.metric("底牌 (凑10的倍数)", " ".join(res['base']))
+        res_col2.metric("分牌 (决定点数)", " ".join(res['sub']))
     else:
-        st.error("### 结果：没牛")
+        st.error("## 💀 没牛（乌龙）")
+        st.write("这把运气一般，点击上方 **清空重选** 继续吧！")
