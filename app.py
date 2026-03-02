@@ -4,7 +4,7 @@ from itertools import combinations
 # 页面基础配置
 st.set_page_config(page_title="牛牛计算器 Pro", layout="centered")
 
-# --- 核心 CSS：强制移动端不换行 + 4x4 对齐 ---
+# --- 核心 CSS：强制移动端不换行 + 完美上下对齐 ---
 st.markdown("""
     <style>
     /* 强制所有按键行不换行，保持 4 列并排 */
@@ -17,9 +17,9 @@ st.markdown("""
         min-width: 0px !important;
     }
     
-    /* 按钮样式优化 */
+    /* 按钮样式优化：必须是 100%，让它撑满所属的列，从而跟显示屏齐平 */
     .stButton > button {
-        width: 20% !important;
+        width: 100% !important; 
         height: 60px !important;
         padding: 0px !important;
         font-size: 20px !important;
@@ -27,8 +27,10 @@ st.markdown("""
         border-radius: 10px !important;
     }
 
-    /* 显示屏样式 */
+    /* 显示屏样式：增加宽度和盒子模型限制，完美对齐下方按钮边缘 */
     .display-screen {
+        box-sizing: border-box !important;
+        width: 100% !important;
         background-color: #1c1c1e;
         color: #ffffff;
         padding: 15px;
@@ -40,7 +42,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 核心算法逻辑 (已修正 TypeError) ---
+# --- 核心算法逻辑 ---
 def get_val(c):
     if c in ['J', 'Q', 'K', '10']: return 10
     if c == 'A': return 1
@@ -93,11 +95,11 @@ keys = [
     ['A', '2', '3', '4'],
     ['5', '6', '7', '8'],
     ['9', '10', 'J', 'Q'],
-    ['K', 'RE', 'AC', '']  # 把退格和清空移到最后一行，完美凑成 4x4
+    ['K', 'RE', 'AC', '']  
 ]
 
 for row in keys:
-    cols = st.columns(4) # 核心改动：强制每一行必须是 4 列宽度
+    cols = st.columns(4) # 每一行严格 4 列
     for i, key in enumerate(row):
         if key == 'AC':
             if cols[i].button("AC (清空)", type="primary", use_container_width=True):
@@ -113,7 +115,6 @@ for row in keys:
                 if len(st.session_state.cards) < 5:
                     st.session_state.cards.append(key)
                     st.rerun()
-        # 最后一个空字符串 '' 会直接跳过不渲染按钮，刚好留下一个完美的空隙保持对齐
 
 st.divider()
 
