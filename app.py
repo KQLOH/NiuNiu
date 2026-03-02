@@ -9,7 +9,7 @@ st.markdown("""
     <style>
     /* 核心：强制所有列在手机上依然并排，不堆叠 */
     [data-testid="column"] {
-        flex: 1 1 0% !important;
+        flex: 9 0% !important;
         min-width: 0px !important;
     }
     
