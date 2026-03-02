@@ -4,53 +4,55 @@ from itertools import combinations
 st.set_page_config(page_title="牛牛计算器 Pro", layout="wide")
 
 # =========================
-# 手机优化 CSS
+# 手机优化 CSS：无缝拼接版
 # =========================
 st.markdown("""
 <style>
 
-/* 页面去掉左右边距 */
+/* 页面边距缩小 */
 .block-container {
-    padding: 0rem 0.5rem !important;
+    padding: 10px !important;
 }
 
-/* 行不要换行 */
+/* 强制一行4列，不换行，且【消除所有缝隙】 */
 div[data-testid="stHorizontalBlock"] {
     flex-wrap: nowrap !important;
-    gap: 0px !important;
+    gap: 0px !important; /* 关键：间距为0 */
 }
 
-/* 列完全无间距 */
+/* 每列平均分，且【消除内边距】 */
 [data-testid="column"] {
-    padding: 0px !important;
+    flex: 1 1 0% !important;
+    min-width: 0px !important;
+    padding: 0px !important; /* 关键：内边距为0 */
 }
 
-/* 按钮去掉所有 margin */
-.stButton {
-    margin: 0px !important;
-}
-
+/* 按钮样式：变成直角方块，完全贴合 */
 .stButton > button {
     width: 100% !important;
     height: 60px !important;
-    margin: 0px !important;
-    padding: 0px !important;
-    border-radius: 0px !important;
-    font-size: 18px !important;
+    font-size: 20px !important;
     font-weight: bold;
+    border-radius: 0px !important; /* 关键：去掉圆角才能无缝拼接 */
+    border: 1px solid #3a3a3c !important; /* 加上暗色细边框，防止按键糊成一团 */
+    margin: 0px !important;
 }
 
-/* 显示屏 */
+/* 按下去的颜色反馈 */
+.stButton > button:active {
+    background-color: #636366 !important;
+}
+
 .display-screen {
     box-sizing: border-box;
     width: 100%;
     background-color: #1c1c1e;
     color: white;
     padding: 12px;
-    border-radius: 0px;
+    border-radius: 15px;
     text-align: right;
-    margin-bottom: 8px;
-    border: none;
+    margin-bottom: 15px;
+    border: 1px solid #3a3a3c;
 }
 
 </style>
