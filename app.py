@@ -1,37 +1,42 @@
 import streamlit as st
 from itertools import combinations
 
-# 设置页面
+# 页面基础配置
 st.set_page_config(page_title="牛牛计算器 Pro", layout="centered")
 
-# --- 强制手机端不换行的 CSS ---
+# --- 核心 CSS：强制移动端不换行 ---
 st.markdown("""
     <style>
-    /* 强制列并排，不因屏幕窄而堆叠 */
+    /* 核心：强制所有列在手机上依然并排，不堆叠 */
     [data-testid="column"] {
         flex: 1 1 0% !important;
         min-width: 0px !important;
     }
+    
+    /* 按钮样式优化 */
     .stButton > button {
-        width: 100%;
-        height: 60px;
-        font-size: 18px !important;
-        border-radius: 10px;
+        width: 100% !important;
+        height: 60px !important;
+        padding: 0px !important;
+        font-size: 20px !important;
+        font-weight: bold !important;
+        border-radius: 10px !important;
     }
+
     /* 显示屏样式 */
-    .display {
-        background-color: #000;
-        color: #00ff00;
+    .display-screen {
+        background-color: #1c1c1e;
+        color: #ffffff;
         padding: 15px;
-        border-radius: 10px;
+        border-radius: 12px;
         text-align: right;
-        font-family: monospace;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #3a3a3c;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 核心逻辑 ---
+# --- 核心算法逻辑 (已修正 TypeError) ---
 def get_val(c):
     if c in ['J', 'Q', 'K', '10']: return 10
     if c == 'A': return 1
@@ -64,25 +69,32 @@ def solve(cards):
     return best
 
 # --- 状态管理 ---
-if 'cards' not in st.session_state: st.session_state.cards = []
+if 'cards' not in st.session_state:
+    st.session_state.cards = []
 
-# --- 界面展示 ---
+# --- UI 界面 ---
 st.title("🃏 牛牛计算器")
 
-# 自定义显示屏
-cards_str = " ".join(st.session_state.cards) if st.session_state.cards else "READY"
-st.markdown(f'<div class="display"><div>COUNT: {len(st.session_state.cards)}/5</div><div style="font-size:30px;">{cards_str}</div></div>', unsafe_allow_html=True)
+# 显示屏
+display_str = " ".join(st.session_state.cards) if st.session_state.cards else "READY"
+st.markdown(f'''
+    <div class="display-screen">
+        <div style="font-size: 12px; color: #8e8e93;">已选 {len(st.session_state.cards)} / 5</div>
+        <div style="font-size: 32px; font-weight: bold; color: #007aff;">{display_str}</div>
+    </div>
+''', unsafe_allow_html=True)
 
-# 顶部功能键
-c1, c2 = st.columns(2)
-if c1.button("AC (清空)", type="primary", use_container_width=True):
+# 功能键：AC 和 Redo (并排)
+c_func1, c_func2 = st.columns(2)
+if c_func1.button("AC (清空)", type="primary", use_container_width=True):
     st.session_state.cards = []
     st.rerun()
-if c2.button("RE (退格)", use_container_width=True):
-    if st.session_state.cards: st.session_state.cards.pop()
-    st.rerun()
+if c_func2.button("RE (退格)", use_container_width=True):
+    if st.session_state.cards:
+        st.session_state.cards.pop()
+        st.rerun()
 
-# 计算器键盘 (4列)
+# 键盘矩阵：每行 4 个按钮
 keys = [
     ['A', '2', '3', '4'],
     ['5', '6', '7', '8'],
@@ -100,11 +112,11 @@ for row in keys:
 
 st.divider()
 
-# 结果
+# 自动结果
 if len(st.session_state.cards) == 5:
     res = solve(st.session_state.cards)
     if res["score"] != -1:
         st.success(f"### {res['type']}")
-        st.caption(f"摆法: 底[{' '.join(res['base'])}] 分[{' '.join(res['sub'])}]")
+        st.info(f"摆法：底[{' '.join(res['base'])}] 分[{' '.join(res['sub'])}]")
     else:
-        st.error("### 没牛")
+        st.error("### 结果：没牛")
