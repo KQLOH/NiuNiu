@@ -6,8 +6,6 @@ st.set_page_config(page_title="牛牛计算器 Pro", layout="centered")
 
 # --- 核心 CSS：强制移动端不换行 + 完美上下对齐 ---
 st.markdown("""
-st.markdown("""
-st.markdown("""
     <style>
     
     /* 让列自动平均分布 */
