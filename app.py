@@ -7,54 +7,53 @@ st.set_page_config(page_title="牛牛计算器 Pro", layout="centered")
 # --- 核心 CSS：强制移动端不换行 + 完美上下对齐 ---
 st.markdown("""
 st.markdown("""
-<style>
-
-/* 页面整体缩小左右 padding */
-.block-container {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-    padding-top: 10px !important;
-}
-
-/* 每一列等比例缩放 */
-[data-testid="column"] {
-    flex: 1 1 0% !important;
-    min-width: 0px !important;
-    padding: 2px !important;
-}
-
-/* 按钮样式 */
-.stButton > button {
-    width: 100% !important;
-    height: 55px !important;
-    font-size: 18px !important;
-    font-weight: bold !important;
-    border-radius: 12px !important;
-}
-
-/* 手机适配 */
-@media (max-width: 480px) {
-    .stButton > button {
-        height: 48px !important;
-        font-size: 16px !important;
+st.markdown("""
+    <style>
+    
+    /* 让列自动平均分布 */
+    [data-testid="column"] {
+        flex: 1 1 0% !important;
+        min-width: 0px !important;
     }
-}
-
-/* 显示屏 */
-.display-screen {
-    box-sizing: border-box !important;
-    width: 100% !important;
-    background-color: #1c1c1e;
-    color: #ffffff;
-    padding: 12px;
-    border-radius: 15px;
-    text-align: right;
-    margin-bottom: 12px;
-    border: 1px solid #3a3a3c;
-}
-
-</style>
-""", unsafe_allow_html=True)
+    
+    /* 按钮手机优化 */
+    .stButton > button {
+        width: 100% !important;
+        height: 55px !important;
+        padding: 0 !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        border-radius: 12px !important;
+    }
+    
+    /* 显示屏 */
+    .display-screen {
+        box-sizing: border-box !important;
+        width: 100% !important;
+        background-color: #1c1c1e;
+        color: white;
+        padding: 12px;
+        border-radius: 12px;
+        text-align: right;
+        margin-bottom: 12px;
+        border: 1px solid #3a3a3c;
+    }
+    
+    /* 手机屏幕优化 */
+    @media (max-width: 768px) {
+    
+        .stButton > button {
+            height: 50px !important;
+            font-size: 16px !important;
+        }
+    
+        .display-screen div:last-child {
+            font-size: 24px !important;
+        }
+    }
+    
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- 核心算法逻辑 ---
 def get_val(c):
