@@ -1,71 +1,46 @@
 import streamlit as st
 from itertools import combinations
 
-# 页面基础配置：隐藏默认侧边栏，居中
-st.set_page_config(page_title="牛牛计算器", layout="centered", initial_sidebar_state="collapsed")
+# 页面基础配置
+st.set_page_config(page_title="牛牛计算器 Pro", layout="centered")
 
-# --- 终极核弹级 CSS：彻底干掉移动端自动换行 ---
+# --- 核心 CSS：强制移动端不换行 + 4x4 对齐 ---
 st.markdown("""
     <style>
-    /* 隐藏顶部白边、菜单和页脚，让它看起来像个原生 App */
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    
-    /* 1. 强制所有水平区块在手机上【绝对不换行】 */
+    /* 强制所有按键行不换行，保持 4 列并排 */
     div[data-testid="stHorizontalBlock"] {
-        flex-direction: row !important;
         flex-wrap: nowrap !important;
-        gap: 8px !important;
-        margin-bottom: 8px !important;
     }
     
-    /* 2. 强制每一列平分宽度 */
-    div[data-testid="column"] {
+    [data-testid="column"] {
         flex: 1 1 0% !important;
-        min-width: 0 !important;
-        width: auto !important;
-        padding: 0 !important;
+        min-width: 0px !important;
     }
-
-    /* 3. 按钮整体样式：仿 iOS 计算器暗黑风 */
+    
+    /* 按钮样式优化 */
     .stButton > button {
         width: 100% !important;
-        height: 70px !important;
-        font-size: 26px !important;
-        font-weight: 600 !important;
-        border-radius: 16px !important;
-        background-color: #333333 !important; /* 深灰色键 */
-        color: #ffffff !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-    }
-    
-    /* 按下去的反馈感 */
-    .stButton > button:active {
-        background-color: #737373 !important;
+        height: 60px !important;
+        padding: 0px !important;
+        font-size: 20px !important;
+        font-weight: bold !important;
+        border-radius: 10px !important;
     }
 
-    /* AC 清空键：设置为苹果红/橙色 */
-    .stButton > button[kind="primary"] {
-        background-color: #ff3b30 !important; 
-        color: white !important;
-    }
-
-    /* 显示屏样式优化 */
-    .calc-screen {
-        background-color: #000000;
-        padding: 20px;
-        border-radius: 20px;
+    /* 显示屏样式 */
+    .display-screen {
+        background-color: #1c1c1e;
+        color: #ffffff;
+        padding: 15px;
+        border-radius: 12px;
         text-align: right;
-        margin-bottom: 25px;
-        margin-top: -30px;
+        margin-bottom: 15px;
+        border: 1px solid #3a3a3c;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 核心算牌逻辑 (保持之前的 3/6 互通与宝宝逻辑) ---
+# --- 核心算法逻辑 (已修正 TypeError) ---
 def get_val(c):
     if c in ['J', 'Q', 'K', '10']: return 10
     if c == 'A': return 1
@@ -101,57 +76,52 @@ def solve(cards):
 if 'cards' not in st.session_state:
     st.session_state.cards = []
 
-# --- 界面 ---
+# --- UI 界面 ---
+st.title("🃏 牛牛计算器")
 
-# 1. 纯黑显示屏
-display_str = " ".join(st.session_state.cards) if st.session_state.cards else "0"
+# 显示屏
+display_str = " ".join(st.session_state.cards) if st.session_state.cards else "READY"
 st.markdown(f'''
-    <div class="calc-screen">
-        <div style="font-size: 14px; color: #8e8e93; margin-bottom: 5px;">已选 {len(st.session_state.cards)} / 5</div>
-        <div style="font-size: 42px; font-weight: bold; color: #ffffff; min-height: 50px;">{display_str}</div>
+    <div class="display-screen">
+        <div style="font-size: 12px; color: #8e8e93;">已选 {len(st.session_state.cards)} / 5</div>
+        <div style="font-size: 32px; font-weight: bold; color: #007aff;">{display_str}</div>
     </div>
 ''', unsafe_allow_html=True)
 
-# 2. 顶部控制键 (2列)
-c_top1, c_top2 = st.columns(2)
-with c_top1:
-    if st.button("AC", type="primary"):
-        st.session_state.cards = []
-        st.rerun()
-with c_top2:
-    if st.button("退格 (Del)"):
-        if st.session_state.cards:
-            st.session_state.cards.pop()
-            st.rerun()
-
-# 3. 键盘矩阵 (强制 4 列)
-rows = [
+# 键盘矩阵：完美的 4x4 布局
+keys = [
     ['A', '2', '3', '4'],
     ['5', '6', '7', '8'],
-    ['9', '10', 'J', 'Q']
+    ['9', '10', 'J', 'Q'],
+    ['K', 'RE', 'AC', '']  # 把退格和清空移到最后一行，完美凑成 4x4
 ]
 
-for row in rows:
-    cols = st.columns(4)
+for row in keys:
+    cols = st.columns(4) # 核心改动：强制每一行必须是 4 列宽度
     for i, key in enumerate(row):
-        if cols[i].button(key):
-            if len(st.session_state.cards) < 5:
-                st.session_state.cards.append(key)
+        if key == 'AC':
+            if cols[i].button("AC (清空)", type="primary", use_container_width=True):
+                st.session_state.cards = []
                 st.rerun()
+        elif key == 'RE':
+            if cols[i].button("RE (退格)", use_container_width=True):
+                if st.session_state.cards:
+                    st.session_state.cards.pop()
+                    st.rerun()
+        elif key != '':
+            if cols[i].button(key, use_container_width=True):
+                if len(st.session_state.cards) < 5:
+                    st.session_state.cards.append(key)
+                    st.rerun()
+        # 最后一个空字符串 '' 会直接跳过不渲染按钮，刚好留下一个完美的空隙保持对齐
 
-# 最后一行单独处理 K (占据最左边1格，其余留空保持对齐)
-cols = st.columns(4)
-if cols[0].button("K"):
-    if len(st.session_state.cards) < 5:
-        st.session_state.cards.append("K")
-        st.rerun()
+st.divider()
 
-# 4. 自动计算结果
+# 自动结果
 if len(st.session_state.cards) == 5:
-    st.markdown("<hr style='border-color: #333;'>", unsafe_allow_html=True)
     res = solve(st.session_state.cards)
     if res["score"] != -1:
-        st.success(f"🔥 {res['type']}")
-        st.info(f"👉 底牌: [{' '.join(res['base'])}] | 分牌: [{' '.join(res['sub'])}]")
+        st.success(f"### {res['type']}")
+        st.info(f"摆法：底[{' '.join(res['base'])}] 分[{' '.join(res['sub'])}]")
     else:
-        st.error("💀 没牛")
+        st.error("### 结果：没牛")
